@@ -2,10 +2,10 @@
 // Description: Agora Web Stream implementation to multiplex webcam and screen streams
 // Blog Link:
 //
-// Your agoraSdk App Id , you can get this from https://console.agora.io
 
 // Initializing global stream variables
 let userVideoStream;
+let redUL, redLL, greenLL, greenUL, blueLL, blueUL;
 let userScreenStream;
 let globalStream; // One that is actually streamed
 
@@ -84,30 +84,57 @@ function getUserScreen() {
 // Draw function responsible for drawing each frame of the stream
 function drawVideo() {
   streamCanvasType.drawImage(
-    screenElement,
+    cameraElement,
     0,
     0,
     streamCanvas.width,
     streamCanvas.height
   );
-  streamCanvasType.save();
-  streamCanvasType.arc(
-    streamCanvas.width - cameraCircleRadius - offset,
-    cameraCircleRadius + offset,
-    cameraCircleRadius,
+  // streamCanvasType.save();
+  // streamCanvasType.drawImage(
+  //   cameraElement,
+  //   streamCanvas.width - userCameraWidth - offset,
+  //   offset,
+  //   userCameraWidth,
+  //   userCameraHeight
+  // );
+  const frame = streamCanvasType.getImageData(
+    // cameraElement,
+    // streamCanvas.width - userCameraWidth - offset,
     0,
-    2 * Math.PI,
-    true
+    0,
+    streamCanvas.width,
+    streamCanvas.height
+    // userCameraWidth,
+    // userCameraHeight
   );
-  streamCanvasType.clip();
-  streamCanvasType.drawImage(
-    cameraElement,
-    streamCanvas.width - userCameraWidth - offset,
-    offset,
-    userCameraWidth,
-    userCameraHeight
+
+  const length = frame.data.length;
+  const data = frame.data;
+
+  for (let i = 0; i < length; i += 4) {
+    const red = data[i + 0];
+    const green = data[i + 1];
+    const blue = data[i + 2];
+    if (
+      green > greenLL &&
+      green < greenUL &&
+      red > redLL &&
+      red < redUL &&
+      blue > blueLL &&
+      blue < blueUL
+    ) {
+      data[i + 3] = 0;
+    }
+  }
+  streamCanvasType.putImageData(
+    frame,
+    // streamCanvas.width - userCameraWidth - offset,
+    // offset
+    0,
+    0
   );
-  streamCanvasType.restore();
+  // streamCanvasType.restore();
 }
 
 // Main driver function
@@ -221,6 +248,12 @@ document.getElementById("join").onclick = function () {
   let channelName = document.getElementById("ChannelName").value;
   let userName = document.getElementById("userName").value;
 
+  let appId = document.getElementById("appid").value;
+
+  if (appId == "") {
+    appId = window.prompt("Please enter an appid");
+  }
+
   client.init(
     appId,
     () => console.log("AgoraRTC Client initialized"),
@@ -264,4 +297,27 @@ document.getElementById("leave").onclick = function () {
   client.leave(function () {
     console.log("Channel Left");
   }, handlefail);
+};
+
+document.getElementById("redLL").onchange = function (e) {
+  redLL = e.target.value;
+};
+document.getElementById("redUL").onchange = function (e) {
+  redUL = e.target.value;
+};
+
+document.getElementById("blueLL").onchange = function (e) {
+  blueLL = e.target.value;
+};
+document.getElementById("blueUL").onchange = function (e) {
+  blueUL = e.target.value;
+};
+
+document.getElementById("greenLL").onchange = function (e) {
+  greenLL = e.target.value;
+};
+
+document.getElementById("greenUL").onchange = function (e) {
+  greenUL = e.target.value;
+  console.log("I am called");
 };
