@@ -6,8 +6,10 @@
 // Initializing global stream variables
 let userVideoStream;
 let redUL, redLL, greenLL, greenUL, blueLL, blueUL;
+let offset = 50;
 let userScreenStream;
 let globalStream; // One that is actually streamed
+// "1e6816ded05149088f32daa1c0d19456"
 
 // Webcam canvas init (offscreen)
 let cameraElement = document.createElement("video");
@@ -90,29 +92,19 @@ function drawVideo() {
     streamCanvas.width,
     streamCanvas.height
   );
-  // streamCanvasType.save();
-  // streamCanvasType.drawImage(
-  //   cameraElement,
-  //   streamCanvas.width - userCameraWidth - offset,
-  //   offset,
-  //   userCameraWidth,
-  //   userCameraHeight
-  // );
   const frame = streamCanvasType.getImageData(
-    // cameraElement,
-    // streamCanvas.width - userCameraWidth - offset,
     0,
     0,
     streamCanvas.width,
     streamCanvas.height
-    // userCameraWidth,
-    // userCameraHeight
   );
 
   const length = frame.data.length;
   const data = frame.data;
 
   for (let i = 0; i < length; i += 4) {
+    // if (i % streamCanvas.width == 0) i += streamCanvas.width + 1;
+    // if (i > length) break;
     const red = data[i + 0];
     const green = data[i + 1];
     const blue = data[i + 2];
@@ -127,50 +119,24 @@ function drawVideo() {
       data[i + 3] = 0;
     }
   }
-  streamCanvasType.putImageData(
-    frame,
-    // streamCanvas.width - userCameraWidth - offset,
-    // offset
-    0,
-    0
-  );
-  // streamCanvasType.restore();
+  streamCanvasType.putImageData(frame, 0, 0);
 }
 
 // Main driver function
 async function streamMultiplexer() {
   // init user streams and append to DOM tree
   userVideoStream = await getUserVideo();
-  userScreenStream = await getUserScreen();
-
   cameraElement.srcObject = userVideoStream;
   cameraElement.play();
-  screenElement.srcObject = userScreenStream;
-  screenElement.play();
 
-  streamCanvas.height = userScreenStream
+  streamCanvas.height = userVideoStream
     .getVideoTracks()[0]
     .getSettings().height;
-  streamCanvas.width = userScreenStream.getVideoTracks()[0].getSettings().width;
+  streamCanvas.width = userVideoStream.getVideoTracks()[0].getSettings().width;
 
-  videoFrameRate = userVideoStream.getVideoTracks()[0].getSettings().frameRate;
-  camFrameRate = userScreenStream.getVideoTracks()[0].getSettings().frameRate;
+  camFrameRate = userVideoStream.getVideoTracks()[0].getSettings().frameRate;
 
-  drawInterval =
-    1000 / (camFrameRate > videoFrameRate ? camFrameRate : videoFrameRate);
-
-  cameraCircleRadius = (streamCanvas.width * scaleFactor) / 100;
-
-  offset = cameraCircleRadius / 5;
-
-  userCameraHeight = cameraCircleRadius * 2;
-  userCameraWidth =
-    userCameraHeight *
-    userVideoStream.getVideoTracks()[0].getSettings().aspectRatio;
-
-  video1 = document.createElement("video");
-  video1.srcObject = userScreenStream;
-  video1.play();
+  drawInterval = 1000 / camFrameRate;
 
   video2 = document.createElement("video");
   video2.srcObject = userVideoStream;
@@ -178,13 +144,13 @@ async function streamMultiplexer() {
 
   // Init base canvas
   document.body.appendChild(streamCanvas);
-  streamCanvasType.fillRect(0, 0, 1920, 1080);
+  streamCanvasType.fillRect(0, 0, streamCanvas.width, streamCanvas.height);
 
   // Draw frames
   setInterval(drawVideo, drawInterval);
 
   // Get video stream from canvas
-  mergedStream = streamCanvas.captureStream(60);
+  mergedStream = streamCanvas.captureStream(camFrameRate);
 
   tracks = mergedStream.getVideoTracks();
 
@@ -299,25 +265,67 @@ document.getElementById("leave").onclick = function () {
   }, handlefail);
 };
 
-document.getElementById("redLL").onchange = function (e) {
-  redLL = e.target.value;
-};
-document.getElementById("redUL").onchange = function (e) {
-  redUL = e.target.value;
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+}
+document.getElementById("color").onchange = function (e) {
+  redLL = hexToRgb(e.target.value).r - offset / 2;
+  greenLL = hexToRgb(e.target.value).g - offset / 2;
+  blueLL = hexToRgb(e.target.value).b - offset / 2;
+
+  redUL = hexToRgb(e.target.value).r + offset / 2;
+  greenUL = hexToRgb(e.target.value).g + offset / 2;
+  blueUL = hexToRgb(e.target.value).b + offset / 2;
 };
 
-document.getElementById("blueLL").onchange = function (e) {
-  blueLL = e.target.value;
-};
-document.getElementById("blueUL").onchange = function (e) {
-  blueUL = e.target.value;
+document.getElementById("offset").onchange = function (e) {
+  offset = parseInt(e.target.value);
+
+  hex = document.getElementById("color").value;
+
+  redLL = hexToRgb(hex).r - offset / 2;
+  greenLL = hexToRgb(hex).g - offset / 2;
+  blueLL = hexToRgb(hex).b - offset / 2;
+
+  redUL = hexToRgb(hex).r + offset / 2;
+  greenUL = hexToRgb(hex).g + offset / 2;
+  blueUL = hexToRgb(hex).b + offset / 2;
+
+  redLL = redLL - offset / 2;
+  greenLL = greenLL - offset / 2;
+  blueLL = blueLL - offset / 2;
+
+  redUL = redUL + offset / 2;
+  greenUL = greenUL + offset / 2;
+  blueUL = blueUL + offset / 2;
 };
 
-document.getElementById("greenLL").onchange = function (e) {
-  greenLL = e.target.value;
-};
+// document.getElementById("redLL").onchange = function (e) {
+//   redLL = e.target.value;
+// };
+// document.getElementById("redUL").onchange = function (e) {
+//   redUL = e.target.value;
+// };
 
-document.getElementById("greenUL").onchange = function (e) {
-  greenUL = e.target.value;
-  console.log("I am called");
-};
+// document.getElementById("blueLL").onchange = function (e) {
+//   blueLL = e.target.value;
+// };
+// document.getElementById("blueUL").onchange = function (e) {
+//   blueUL = e.target.value;
+// };
+
+// document.getElementById("greenLL").onchange = function (e) {
+//   greenLL = e.target.value;
+// };
+
+// document.getElementById("greenUL").onchange = function (e) {
+//   greenUL = e.target.value;
+//   console.log("I am called");
+// };
