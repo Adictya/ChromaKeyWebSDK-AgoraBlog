@@ -1,6 +1,7 @@
-# Presentation Mode using Agora WebSdk
+# Chroma Key using HTML5 Canvas and Agora WebSdk
 
-Guide project to setup presentation mode ie Screen sharing with user cam overlay multiplexed onto a single track
+Guide project to setup chroma key ie background removal/replacement
+Demo at - https://www.adictya.dev/ChromaKeyWebSDK-AgoraBlog/
 
 ## Prerequisites
 
@@ -20,7 +21,7 @@ To run the sample website, first obtain an app ID:
 
 ```bash
 git clone https://github.com/Adictya/PresentationModeWebSdk-AgoraBlog.git
-cd PresentationModeWebSdk-AgoraBlog
+cd ChromaKeyWebSDK-AgoraBlog
 npm i live-server -g
 live-server .
 ```
