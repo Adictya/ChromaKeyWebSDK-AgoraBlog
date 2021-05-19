@@ -44,7 +44,7 @@ let client = AgoraRTC.createClient({
 
 // Function to handle fail events
 let handlefail = function (err) {
-  window.alert("Shit is failing : " + err);
+  window.alert("Error Encountered : " + err);
   console.log(err);
 };
 
