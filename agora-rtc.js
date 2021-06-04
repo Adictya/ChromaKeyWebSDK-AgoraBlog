@@ -9,7 +9,18 @@ let redUL, redLL, greenLL, greenUL, blueLL, blueUL;
 let offset = 50;
 let userScreenStream;
 let globalStream; // One that is actually streamed
-// "1e6816ded05149088f32daa1c0d19456"
+// enter app Id here
+let appId = "*********************************";
+
+hex = document.getElementById("color").value;
+
+redLL = hexToRgb(hex).r;
+greenLL = hexToRgb(hex).g;
+blueLL = hexToRgb(hex).b;
+
+redUL = hexToRgb(hex).r;
+greenUL = hexToRgb(hex).g;
+blueUL = hexToRgb(hex).b;
 
 // Webcam canvas init (offscreen)
 let cameraElement = document.createElement("video");
@@ -214,8 +225,6 @@ document.getElementById("join").onclick = function () {
   let channelName = document.getElementById("ChannelName").value;
   let userName = document.getElementById("userName").value;
 
-  let appId = document.getElementById("appid").value;
-
   if (appId == "") {
     appId = window.prompt("Please enter an appid");
   }
@@ -288,15 +297,16 @@ document.getElementById("color").onchange = function (e) {
 document.getElementById("offset").onchange = function (e) {
   offset = parseInt(e.target.value);
 
+  console.log("Before" + redUL);
   hex = document.getElementById("color").value;
 
-  redLL = hexToRgb(hex).r - offset / 2;
-  greenLL = hexToRgb(hex).g - offset / 2;
-  blueLL = hexToRgb(hex).b - offset / 2;
+  redLL = hexToRgb(hex).r;
+  greenLL = hexToRgb(hex).g;
+  blueLL = hexToRgb(hex).b;
 
-  redUL = hexToRgb(hex).r + offset / 2;
-  greenUL = hexToRgb(hex).g + offset / 2;
-  blueUL = hexToRgb(hex).b + offset / 2;
+  redUL = hexToRgb(hex).r;
+  greenUL = hexToRgb(hex).g;
+  blueUL = hexToRgb(hex).b;
 
   redLL = redLL - offset / 2;
   greenLL = greenLL - offset / 2;
@@ -305,6 +315,8 @@ document.getElementById("offset").onchange = function (e) {
   redUL = redUL + offset / 2;
   greenUL = greenUL + offset / 2;
   blueUL = blueUL + offset / 2;
+
+  console.log("After" + redUL);
 };
 
 // document.getElementById("redLL").onchange = function (e) {
